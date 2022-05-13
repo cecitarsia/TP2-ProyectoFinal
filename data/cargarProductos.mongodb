@@ -1,0 +1,8 @@
+use('Proyecto');
+
+db.Productos.drop();
+db.Productos.insertMany([
+    { titulo: 'Stella Artois', descripcion: 'La cerveza repatriada', precio: 100, imagen: "imagen", tipo: 'Bebida', stock: 5},
+    { titulo: 'Roque', descripcion: 'Queso azul', precio: 250, imagen: "imagen", tipo: 'Comida', stock: 15},
+    { titulo: 'Combo Quesos', descripcion: 'Pategras y Roquefort', precio: 520, imagen: "imagen", tipo: 'Combo', stock: 25},
+]);
