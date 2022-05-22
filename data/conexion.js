@@ -1,14 +1,23 @@
-const mongoclient = require('mongodb').MongoClient;
+require("dotenv").config();
 
-const uri = "mongodb+srv://mibase:mibase@cluster0.zlhpe.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+const mongoclient = require("mongodb").MongoClient;
+
+const uri = process.env.MONGODB;
 
 const client = new mongoclient(uri);
 
 let instance = null;
 
-async function getConnection(){
-    let instance = await client.connect();
-    return instance;
+async function getConnection() {
+  if (instance == null) {
+    try {
+      instance = await client.connect();
+    } catch (error) {
+      console.log(error.message);
+      throw new Error("Problemas en la conexión con MondoDB");
+    }
+  }
+  return instance;
 }
 
-module.exports = {getConnection};
+module.exports = { getConnection };
