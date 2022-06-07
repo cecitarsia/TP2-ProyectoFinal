@@ -1,13 +1,16 @@
 const connection = require("./conexion");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const DATABASE = "Proyecto";
+const COLLECTION_USERS = "Usuarios";
+const parseObjectId = require("../utils/parseObjectId");
 require("dotenv").config();
 
 async function getAllUsers() {
   const clientmongo = await connection.getConnection();
   const users = await clientmongo
-    .db("Proyecto")
-    .collection("Usuarios")
+    .db(DATABASE)
+    .collection(COLLECTION_USERS)
     .find()
     .toArray();
   return users;
@@ -15,20 +18,29 @@ async function getAllUsers() {
 
 async function addUser(user) {
   const clientmongo = await connection.getConnection();
+  if (!user.rol) { //si un usuario no tiene rol le asignamos el de usuario comun, cuando agregamos el admin con este metodo ya tiene su rol de admin
+    user.rol = "usuario";
+  }
+
   user.password = await bcrypt.hash(user.password, 8);
 
   const result = await clientmongo
-    .db("Proyecto")
-    .collection("Usuarios")
+    .db(DATABASE)
+    .collection(COLLECTION_USERS)
     .insertOne(user);
   return result;
 }
 
+async function addAdmintrator(user) {
+  user.rol = "administrador";
+  return addUser(user);
+}
+ 
 async function findByCredentials(email, password) {
   const clientmongo = await connection.getConnection();
   const user = await clientmongo
-    .db("Proyecto")
-    .collection("Usuarios")
+    .db(DATABASE)
+    .collection(COLLECTION_USERS)
     .findOne({ email: email });
 
   if (!user) {
@@ -44,10 +56,40 @@ async function findByCredentials(email, password) {
 }
 
 function generateToken(user) {
-  const token = jwt.sign({ _id: user._id }, process.env.CLAVEJWT, {
-    expiresIn: "2h",
+  const token = jwt.sign({ _id: user._id, rol: user.rol }, process.env.CLAVEJWT, { //agregamos el rol en el token para que en auth se pueda asignar
+    expiresIn: "2h", 
   });
   return token;
 }
 
-module.exports = { addUser, getAllUsers, findByCredentials, generateToken };
+//Este no se si es necesario para nuestro alcance, en caso de utilizarlo, hay codificar la pass antes de pegarle a la db o se guarda plana
+async function updateUser(id, user) {
+  const clientmongo = await connection.getConnection();
+  
+  const obId = parseObjectId(id);
+  const result = await clientmongo
+    .db(DATABASE)
+    .collection(COLLECTION_USERS)
+    .updateOne({_id: obId}, { $set: user });
+  return result;
+}
+
+async function deleteUser(id) {
+  const clientmongo = await connection.getConnection();
+  const obId = parseObjectId(id);
+  const result = await clientmongo
+  .db(DATABASE)
+  .collection(COLLECTION_USERS)
+  .deleteOne({ _id: obId});
+return result;
+}
+
+module.exports = { 
+  addUser,
+  addAdmintrator, 
+  getAllUsers, 
+  findByCredentials, 
+  generateToken, 
+  updateUser, 
+  deleteUser 
+};
