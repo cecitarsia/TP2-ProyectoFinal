@@ -13,7 +13,7 @@ router.get("/", auth, authadministrator, async function (req, res, next) {
   }
 });
 
-router.post("/", auth, async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const new_User = req.body;
     if(!new_User.email || !new_User.password) {
@@ -59,7 +59,9 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
-//este delete esta choto sin control de errores ni auth para poder usarlo rapido nomas 
+//este delete esta choto sin control de errores ni auth para poder usarlo rapido nomas. con auth admin no funciona.
+//hacer try catch y validar el token
+//if (req.params.userrol == "usuario" && req.params.userid != req.params.id)
 router.delete("/:id", async (req, res) => {
   const result = await usersController.deleteUser(req.params.id);
   res.json(result);

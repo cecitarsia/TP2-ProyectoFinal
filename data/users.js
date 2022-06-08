@@ -17,6 +17,7 @@ async function getAllUsers() {
 }
 
 async function addUser(user) {
+  //agregar propiedad activo
   const clientmongo = await connection.getConnection();
   if (!user.rol) { //si un usuario no tiene rol le asignamos el de usuario comun, cuando agregamos el admin con este metodo ya tiene su rol de admin
     user.rol = "usuario";
@@ -75,6 +76,7 @@ async function updateUser(id, user) {
 }
 
 async function deleteUser(id) {
+  //modificar a update activo/inactivo
   const clientmongo = await connection.getConnection();
   const obId = parseObjectId(id);
   const result = await clientmongo

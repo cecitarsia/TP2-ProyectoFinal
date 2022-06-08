@@ -1,11 +1,13 @@
 const connection = require("./conexion");
 const objectId = require("mongodb").ObjectId;
+const DATABASE = "Proyecto";
+const COLLECTION_PRODUCTS = "Productos";
 
 async function getProductos() {
   const clientmongo = await connection.getConnection();
   const productos = await clientmongo
-    .db("Proyecto")
-    .collection("Productos")
+    .db(DATABASE)
+    .collection(COLLECTION_PRODUCTS)
     .find()
     .toArray();
   return productos;
@@ -14,8 +16,8 @@ async function getProductos() {
 async function getProducto(id) {
   const clientmongo = await connection.getConnection();
   const producto = await clientmongo
-    .db("Proyecto")
-    .collection("Productos")
+    .db(DATABASE)
+    .collection(COLLECTION_PRODUCTS)
     .find({ _id: new objectId(id) })
     .toArray();
   return producto;
@@ -24,8 +26,8 @@ async function getProducto(id) {
 async function addProducto(producto) {
   const clientmongo = await connection.getConnection();
   const result = await clientmongo
-    .db("Proyecto")
-    .collection("Productos")
+    .db(DATABASE)
+    .collection(COLLECTION_PRODUCTS)
     .insertOne(producto);
   return result;
 }
@@ -34,8 +36,8 @@ async function updateProducto(producto) {
   const clientmongo = await connection.getConnection();
   console.log(producto);
   const result = await clientmongo
-    .db("Proyecto")
-    .collection("Productos")
+    .db(DATABASE)
+    .collection(COLLECTION_PRODUCTS)
     .updateOne(
       {
         _id: new objectId(producto._id),
@@ -57,10 +59,43 @@ async function updateProducto(producto) {
 async function deleteProducto(id) {
   const clientmongo = await connection.getConnection();
   const result = await clientmongo
-    .db("Proyecto")
-    .collection("Productos")
+    .db(DATABASE)
+    .collection(COLLECTION_PRODUCTS)
     .deleteOne({ _id: new objectId(id) });
   return result;
+}
+
+async function comprarProductos(productos){
+  //chequear stock, compara cant producto con stock actual
+  const ids = productos.map(producto => 
+    {
+    return new objectId(producto._id)
+    }
+  );
+  const clientmongo = await connection.getConnection();
+  const result = await clientmongo
+    .db(DATABASE)
+    .collection(COLLECTION_PRODUCTS)
+    .find({ '_id': { $in: ids }}, { projection: { stock: 1} })
+    .toArray();
+  //console.log(result);
+  const stockSuficiente = chequearStock(productos, result);  
+  return stockSuficiente;
+}
+
+function chequearStock (prodReq, prodDb){
+//if hay todos los productos en su cantidad-> resta stock, suma al historial
+  let stockSuficiente = true;
+  let i=0;
+  while(stockSuficiente && i<prodReq.length){
+    let idProdReq = prodReq[i]._id;
+    let indexProdDb = prodDb.findIndex(producto => producto._id == idProdReq);
+    if(prodReq[i].stock > prodDb[indexProdDb].stock){
+      stockSuficiente = false;
+    }
+    i++;
+  }
+  return stockSuficiente;
 }
 
 module.exports = {
@@ -69,4 +104,5 @@ module.exports = {
   addProducto,
   updateProducto,
   deleteProducto,
+  comprarProductos
 };

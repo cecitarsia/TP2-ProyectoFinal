@@ -20,10 +20,15 @@ async function deleteProducto(id) {
   return productos.deleteProducto(id);
 }
 
+async function comprarProductos(data) {
+  return productos.comprarProductos(data);
+}
+
 module.exports = {
   getProductos,
   getProducto,
   addProducto,
   updateProducto,
   deleteProducto,
+  comprarProductos
 };
