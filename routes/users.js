@@ -59,12 +59,18 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
-//este delete esta choto sin control de errores ni auth para poder usarlo rapido nomas. con auth admin no funciona.
-//hacer try catch y validar el token
-//if (req.params.userrol == "usuario" && req.params.userid != req.params.id)
-router.delete("/:id", async (req, res) => {
-  const result = await usersController.deleteUser(req.params.id);
-  res.json(result);
+//Ya funciona y hace la baja logica
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    if (req.params.userrol == "usuario" && req.params.userid != req.params.id) {
+      res.status(404).json({error: "usuario no encontrado"});
+      return;
+    }
+    const result = await usersController.deleteUser(req.params.id);
+    result.matchedCount ? res.send(result) : res.status(404).json({error: "id no encontrado"});
+  } catch (error) {
+    res.status(500).json({error: error.message});
+  }
 });
 
 module.exports = router;

@@ -17,8 +17,8 @@ async function getAllUsers() {
 }
 
 async function addUser(user) {
-  //agregar propiedad activo
   const clientmongo = await connection.getConnection();
+  user.activo = true;
   if (!user.rol) { //si un usuario no tiene rol le asignamos el de usuario comun, cuando agregamos el admin con este metodo ya tiene su rol de admin
     user.rol = "usuario";
   }
@@ -63,7 +63,7 @@ function generateToken(user) {
   return token;
 }
 
-//Este no se si es necesario para nuestro alcance, en caso de utilizarlo, hay codificar la pass antes de pegarle a la db o se guarda plana
+//Solo para actualizar el mail
 async function updateUser(id, user) {
   const clientmongo = await connection.getConnection();
   
@@ -71,18 +71,17 @@ async function updateUser(id, user) {
   const result = await clientmongo
     .db(DATABASE)
     .collection(COLLECTION_USERS)
-    .updateOne({_id: obId}, { $set: user });
+    .updateOne({_id: obId}, { $set: { email: user.email}});
   return result;
 }
 
 async function deleteUser(id) {
-  //modificar a update activo/inactivo
   const clientmongo = await connection.getConnection();
   const obId = parseObjectId(id);
   const result = await clientmongo
   .db(DATABASE)
   .collection(COLLECTION_USERS)
-  .deleteOne({ _id: obId});
+  .updateOne({ _id: obId}, {$set : { activo: false}});
 return result;
 }
 
