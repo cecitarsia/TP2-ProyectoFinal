@@ -73,29 +73,44 @@ async function comprarProductos(productos){
     }
   );
   const clientmongo = await connection.getConnection();
-  const result = await clientmongo
-    .db(DATABASE)
-    .collection(COLLECTION_PRODUCTS)
+  const coleccionProductos = await clientmongo.db(DATABASE).collection(COLLECTION_PRODUCTS);
+  const result = await coleccionProductos
     .find({ '_id': { $in: ids }}, { projection: { stock: 1} })
     .toArray();
-  //console.log(result);
+  console.log(result);
   const stockSuficiente = chequearStock(productos, result);  
+  if(stockSuficiente){
+    restarStock(productos, coleccionProductos);
+  }
   return stockSuficiente;
 }
 
 function chequearStock (prodReq, prodDb){
-//if hay todos los productos en su cantidad-> resta stock, suma al historial
+//if hay todos los productos en su cantidad-> suma al historial
   let stockSuficiente = true;
   let i=0;
   while(stockSuficiente && i<prodReq.length){
     let idProdReq = prodReq[i]._id;
     let indexProdDb = prodDb.findIndex(producto => producto._id == idProdReq);
-    if(prodReq[i].stock > prodDb[indexProdDb].stock){
+    if(prodReq[i].cantidad > prodDb[indexProdDb].stock){
       stockSuficiente = false;
     }
     i++;
   }
   return stockSuficiente;
+}
+
+function restarStock(prodReq, coleccionProductos){
+  prodReq.forEach(element => {
+    coleccionProductos.updateOne(
+      {
+        _id: new objectId(element._id),
+      },
+        {
+          $inc:{stock: -element.cantidad},
+        },
+    );
+  });
 }
 
 module.exports = {
