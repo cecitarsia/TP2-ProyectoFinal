@@ -1,7 +1,7 @@
 const connection = require("./conexion");
-const objectId = require("mongodb").ObjectId;
 const DATABASE = "Proyecto";
 const COLLECTION_HISTORIAL = "Historial";
+const objectId = require("mongodb").ObjectId;
 
 // item = {
 //     _id: id,
@@ -9,6 +9,16 @@ const COLLECTION_HISTORIAL = "Historial";
 //     cantidad: int,
 //     precioUnitario,
 // }
+
+async function getHistorial(id) {
+  const clientmongo = await connection.getConnection();
+  const historial = await clientmongo
+    .db(DATABASE)
+    .collection(COLLECTION_HISTORIAL)
+    .find({ userId: id})
+    .toArray();
+  return historial;
+}
 
 async function addCarrito(productos, userId) {
   const clientmongo = await connection.getConnection();
@@ -24,5 +34,5 @@ async function addCarrito(productos, userId) {
 }
 
 module.exports = {
-  addCarrito,
+  addCarrito, getHistorial
 };

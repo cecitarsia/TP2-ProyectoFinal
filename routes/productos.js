@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const productosController = require("../controllers/productos");
+
 router.get("/", async function (req, res, next) {
   const productos = await productosController.getProductos();
   res.json(productos);
@@ -29,7 +30,7 @@ router.delete("/:id", async (req, res) => {
 router.post("/comprar", async (req, res) => {
   const result = await productosController.comprarProductos(
     req.body.productos,
-    req.body.id
+    req.body._id
   );
   res.json(result);
 });

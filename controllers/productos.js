@@ -20,8 +20,8 @@ async function deleteProducto(id) {
   return productos.deleteProducto(id);
 }
 
-async function comprarProductos(data) {
-  return productos.comprarProductos(data);
+async function comprarProductos(data, id) {
+  return productos.comprarProductos(data, id);
 }
 
 module.exports = {
