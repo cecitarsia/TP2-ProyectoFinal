@@ -1,4 +1,5 @@
 const connection = require("./conexion");
+const { addCarrito } = require("./historial");
 const objectId = require("mongodb").ObjectId;
 const DATABASE = "Proyecto";
 const COLLECTION_PRODUCTS = "Productos";
@@ -65,34 +66,35 @@ async function deleteProducto(id) {
   return result;
 }
 
-async function comprarProductos(productos){
+async function comprarProductos(productos, userId) {
   //chequear stock, compara cant producto con stock actual
-  const ids = productos.map(producto => 
-    {
-    return new objectId(producto._id)
-    }
-  );
+  const ids = productos.map((producto) => {
+    return new objectId(producto._id);
+  });
   const clientmongo = await connection.getConnection();
-  const coleccionProductos = await clientmongo.db(DATABASE).collection(COLLECTION_PRODUCTS);
+  const coleccionProductos = await clientmongo
+    .db(DATABASE)
+    .collection(COLLECTION_PRODUCTS);
   const result = await coleccionProductos
-    .find({ '_id': { $in: ids }}, { projection: { stock: 1} })
+    .find({ _id: { $in: ids } }, { projection: { stock: 1 } })
     .toArray();
   console.log(result);
-  const stockSuficiente = chequearStock(productos, result);  
-  if(stockSuficiente){
+  const stockSuficiente = chequearStock(productos, result);
+  if (stockSuficiente) {
     restarStock(productos, coleccionProductos);
+    await addCarrito(productos, userId);
   }
   return stockSuficiente;
 }
 
-function chequearStock (prodReq, prodDb){
-//if hay todos los productos en su cantidad-> suma al historial
+function chequearStock(prodReq, prodDb) {
+  //if hay todos los productos en su cantidad-> suma al historial
   let stockSuficiente = true;
-  let i=0;
-  while(stockSuficiente && i<prodReq.length){
+  let i = 0;
+  while (stockSuficiente && i < prodReq.length) {
     let idProdReq = prodReq[i]._id;
-    let indexProdDb = prodDb.findIndex(producto => producto._id == idProdReq);
-    if(prodReq[i].cantidad > prodDb[indexProdDb].stock){
+    let indexProdDb = prodDb.findIndex((producto) => producto._id == idProdReq);
+    if (prodReq[i].cantidad > prodDb[indexProdDb].stock) {
       stockSuficiente = false;
     }
     i++;
@@ -100,15 +102,15 @@ function chequearStock (prodReq, prodDb){
   return stockSuficiente;
 }
 
-function restarStock(prodReq, coleccionProductos){
-  prodReq.forEach(element => {
+function restarStock(prodReq, coleccionProductos) {
+  prodReq.forEach((element) => {
     coleccionProductos.updateOne(
       {
         _id: new objectId(element._id),
       },
-        {
-          $inc:{stock: -element.cantidad},
-        },
+      {
+        $inc: { stock: -element.cantidad },
+      }
     );
   });
 }
@@ -119,5 +121,5 @@ module.exports = {
   addProducto,
   updateProducto,
   deleteProducto,
-  comprarProductos
+  comprarProductos,
 };

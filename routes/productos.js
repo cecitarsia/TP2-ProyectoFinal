@@ -27,7 +27,10 @@ router.delete("/:id", async (req, res) => {
 });
 
 router.post("/comprar", async (req, res) => {
-  const result = await productosController.comprarProductos(req.body);
+  const result = await productosController.comprarProductos(
+    req.body.productos,
+    req.body.id
+  );
   res.json(result);
 });
 
