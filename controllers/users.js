@@ -15,7 +15,7 @@ async function addAdmintrator(user) {
 async function findByCredentials(email, password) {
   const user = await users.findByCredentials(email, password);
   const token = users.generateToken(user);
-  return { user, token };
+  return { token };
 }
 
 function generateToken(user) {
@@ -30,4 +30,12 @@ async function deleteUser(id) {
   return users.deleteUser(id);
 }
 
-module.exports = { addUser, addAdmintrator, getAllUsers, findByCredentials, generateToken, updateUser, deleteUser };
+module.exports = {
+  addUser,
+  addAdmintrator,
+  getAllUsers,
+  findByCredentials,
+  generateToken,
+  updateUser,
+  deleteUser,
+};

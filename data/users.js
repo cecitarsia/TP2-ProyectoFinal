@@ -19,7 +19,8 @@ async function getAllUsers() {
 async function addUser(user) {
   const clientmongo = await connection.getConnection();
   user.activo = true;
-  if (!user.rol) { //si un usuario no tiene rol le asignamos el de usuario comun, cuando agregamos el admin con este metodo ya tiene su rol de admin
+  if (!user.rol) {
+    //si un usuario no tiene rol le asignamos el de usuario comun, cuando agregamos el admin con este metodo ya tiene su rol de admin
     user.rol = "usuario";
   }
 
@@ -36,7 +37,7 @@ async function addAdmintrator(user) {
   user.rol = "administrador";
   return addUser(user);
 }
- 
+
 async function findByCredentials(email, password) {
   const clientmongo = await connection.getConnection();
   const user = await clientmongo
@@ -57,21 +58,26 @@ async function findByCredentials(email, password) {
 }
 
 function generateToken(user) {
-  const token = jwt.sign({ _id: user._id, rol: user.rol }, process.env.CLAVEJWT, { //agregamos el rol en el token para que en auth se pueda asignar
-    expiresIn: "2h", 
-  });
+  const token = jwt.sign(
+    { _id: user._id, rol: user.rol },
+    process.env.CLAVEJWT,
+    {
+      //agregamos el rol en el token para que en auth se pueda asignar
+      expiresIn: "2h",
+    }
+  );
   return token;
 }
 
 //Solo para actualizar el mail
 async function updateUser(id, user) {
   const clientmongo = await connection.getConnection();
-  
+
   const obId = parseObjectId(id);
   const result = await clientmongo
     .db(DATABASE)
     .collection(COLLECTION_USERS)
-    .updateOne({_id: obId}, { $set: { email: user.email}});
+    .updateOne({ _id: obId }, { $set: { email: user.email } });
   return result;
 }
 
@@ -79,18 +85,18 @@ async function deleteUser(id) {
   const clientmongo = await connection.getConnection();
   const obId = parseObjectId(id);
   const result = await clientmongo
-  .db(DATABASE)
-  .collection(COLLECTION_USERS)
-  .updateOne({ _id: obId}, {$set : { activo: false}});
-return result;
+    .db(DATABASE)
+    .collection(COLLECTION_USERS)
+    .updateOne({ _id: obId }, { $set: { activo: false } });
+  return result;
 }
 
-module.exports = { 
+module.exports = {
   addUser,
-  addAdmintrator, 
-  getAllUsers, 
-  findByCredentials, 
-  generateToken, 
-  updateUser, 
-  deleteUser 
+  addAdmintrator,
+  getAllUsers,
+  findByCredentials,
+  generateToken,
+  updateUser,
+  deleteUser,
 };
