@@ -24,6 +24,38 @@ async function getProducto(id) {
   return producto;
 }
 
+async function getProductosPorTipo(type) {
+  const clientmongo = await connection.getConnection();
+  const productos = await clientmongo
+    .db(DATABASE)
+    .collection(COLLECTION_PRODUCTS)
+    .find({ tipo: type })
+    .toArray();
+  return productos;
+}
+
+async function getProductosPrecioAsc() {
+  const clientmongo = await connection.getConnection();
+  const productos = await clientmongo
+    .db(DATABASE)
+    .collection(COLLECTION_PRODUCTS)
+    .find()
+    .sort({precio : 1})
+    .toArray();
+  return productos;
+}
+
+async function getProductosPrecioDes() {
+  const clientmongo = await connection.getConnection();
+  const productos = await clientmongo
+    .db(DATABASE)
+    .collection(COLLECTION_PRODUCTS)
+    .find()
+    .sort({precio : -1})
+    .toArray();
+  return productos;
+}
+
 async function addProducto(producto) {
   const clientmongo = await connection.getConnection();
   const result = await clientmongo
@@ -118,6 +150,9 @@ function restarStock(prodReq, coleccionProductos) {
 module.exports = {
   getProductos,
   getProducto,
+  getProductosPorTipo,
+  getProductosPrecioAsc,
+  getProductosPrecioDes,
   addProducto,
   updateProducto,
   deleteProducto,
