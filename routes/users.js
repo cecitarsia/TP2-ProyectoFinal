@@ -39,7 +39,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.post("/admin", auth, async (req, res) => {
+router.post("/admin", auth, authadministrator, async (req, res) => {
   const new_User = req.body;
   if (!new_User.email || !new_User.password) {
     res.status(400).json({ error: "datos inválidos" });
